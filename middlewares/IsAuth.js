@@ -6,7 +6,16 @@ const secretkey = process.env.SECRET_KEY;
 
 const isAuth = async (req, res, next) => {
   try {
-    const token = req.cookies?.token;
+    const cookieToken = req.cookies?.token;
+    const authHeader = req.headers?.authorization || "";
+    const bearerToken = authHeader.startsWith("Bearer ")
+      ? authHeader.slice(7).trim()
+      : "";
+    const token =
+      cookieToken ||
+      bearerToken ||
+      req.headers?.["x-access-token"] ||
+      req.headers?.["x-auth-token"];
 
     if (!token) {
       return res.status(401).json({ message: "Unauthorized: token missing" });

@@ -17,17 +17,17 @@ const isAuth = require("../middlewares/IsAuth");
 // });
 
 router.post("/signup",  signup);
-router.post("/signin", isAuth, signin); // NO isAuth here
+router.post("/signin", signin);
 router.post("/signout", isAuth, signout);
-router.post("/sendotp", isAuth, sendmailotp);
-router.post("/verifyotp", isAuth, verifyotp);
-router.post("/resetpass", isAuth, resetpassword);
-router.post("/verify-super-otp", isAuth, verifysupotp);
-router.post("/verify-super-security", isAuth, verifysupersecuritycode);
-router.post("/super-final", isAuth, verifyinsanecode);
+router.post("/sendotp", sendmailotp);
+router.post("/verifyotp", verifyotp);
+router.post("/resetpass", resetpassword);
+router.post("/verify-super-otp", verifysupotp);
+router.post("/verify-super-security", verifysupersecuritycode);
+router.post("/super-final", verifyinsanecode);
 router.get("/getcurrent", isAuth, getcurrentuser);
 router.post("/sendsupotp", sendsupotp);
 router.post("/googlesignup",googleauth)
-router.post("/googlelogin",isAuth,googleauthlogin)
+router.post("/googlelogin",googleauthlogin)
 // router.post("/suppfulll",verifyfinalcode)
 module.exports = router;

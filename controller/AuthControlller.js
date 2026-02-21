@@ -19,6 +19,20 @@ const genOtp = (len = 6) => {
   return { plain, hash };
 };
 
+const isProduction = process.env.NODE_ENV === "production";
+const getCookieOptions = (maxAge) => ({
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  maxAge,
+});
+
+const getClearCookieOptions = () => ({
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+});
+
 const signup = async (req, res) => {
   try {
     const { username, email, password, mobile, role, gender } = req.body;
@@ -45,12 +59,7 @@ const signup = async (req, res) => {
     });
 
     const token = gentoken({ id: newUser._id, role: newUser.role });
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("token", token, getCookieOptions(7 * 24 * 60 * 60 * 1000));
 
     return res.status(201).json({
       success: true,
@@ -147,12 +156,7 @@ const signin = async (req, res) => {
       role: existing.role
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    res.cookie("token", token, getCookieOptions(7 * 24 * 60 * 60 * 1000));
 
     return res.status(200).json({
       success: true,
@@ -177,11 +181,7 @@ const signin = async (req, res) => {
 
 const signout = async (req, res) => {
   try {
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: false,
-      sameSite: "Strict",
-    });
+    res.clearCookie("token", getClearCookieOptions());
     return res.status(200).json({ message: "logout successful", success:true });
   } catch (error) {
     console.error("signout error:", error);
@@ -329,12 +329,7 @@ const verifyinsanecode = async (req, res) => {
 
     // // issue final token with role
     const token = gentoken({ id: admin._id, role: "SuperAdmin" });
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("token", token, getCookieOptions(7 * 24 * 60 * 60 * 1000));
 
     admin.isSuperFullyVerified = false;
     admin.superVerifiedAt = Date.now();
@@ -557,12 +552,7 @@ const googleauthlogin = async(req,res) => {
 
     existinguser.username = username; // optional update
     const token = await gentoken({id: existinguser._id, role: existinguser.role});
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "strict",
-      maxAge: 3*24*60*60*1000,
-    });
+    res.cookie("token", token, getCookieOptions(3 * 24 * 60 * 60 * 1000));
     return res.status(200).json({ message: "Login Successful", success:true,
            user: {
         id: existinguser._id,
@@ -592,23 +582,13 @@ const googleauth = async (req, res) => {
       });
 
       const token = await gentoken({id:newUser._id,role:newUser.role});
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "strict",
-        maxAge: 3*24*60*60*1000,
-      });
+      res.cookie("token", token, getCookieOptions(3 * 24 * 60 * 60 * 1000));
 
       return res.status(200).json({ success: true, user: newUser });
     } else {
       // existing user → login
       const token = await gentoken({id: existinguser._id, role: existinguser.role});
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "strict",
-        maxAge: 7*24*60*60*1000,
-      });
+      res.cookie("token", token, getCookieOptions(7 * 24 * 60 * 60 * 1000));
       return res.status(200).json({
         success: true,
         message: "User already exists, logged in successfully",
