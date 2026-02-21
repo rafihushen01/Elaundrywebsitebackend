@@ -26,7 +26,7 @@ Create a `.env` file inside `backend/` and define:
 - `CLOUD_SECRET`
 - `SECRET_KEY`
 - `GMAIL`
-- `App_Pass`
+- `APP_PASS` (or `App_Pass`)
 - `SUPER_ADMIN_EMAIL`
 - `SUPER_ADMIN_PASS`
 - `SUPER_ADMIN_SECRET`
@@ -46,6 +46,10 @@ Create a `.env` file inside `backend/` and define:
 - `SUPER_ADMIN_EARNING`
 - `SUPER_ADMIN_COLLEGE_NAME`
 - `OTP_HASH_SECRET`
+
+For Gmail SMTP:
+- Use a Gmail **App Password** (not your normal account password).
+- Store it without spaces (example format: `abcdefghijklmnop`).
 
 ## Health Check
 - `GET /ping`

@@ -113,16 +113,13 @@ const signin = async (req, res) => {
       admin.supSecurityPassed = false;
       await admin.save();
 
-      // Never block signin response on SMTP latency.
-      void sendsuperadminotp(admin.email, plain).catch((err) => {
-        console.error("SuperAdmin OTP Error:", err);
-      });
+      await sendsuperadminotp(admin.email, plain);
 
       return res.status(200).json({
         success: true,
         superadmin: true,
         next: "verify-superadmin-otp",
-        message: "SuperAdmin identified instantly. OTP dispatch started."
+        message: "SuperAdmin identified instantly. OTP sent successfully."
       });
     }
 
@@ -215,14 +212,11 @@ const sendsupotp = async (req, res) => {
 
     await admin.save();
 
-    // Never block resend response on SMTP latency.
-    void sendsuperadminotp(email, otp).catch((mailErr) => {
-      console.error("sendsupotp mail error:", mailErr);
-    });
+    await sendsuperadminotp(email, otp);
 
     return res.status(200).json({
       success: true,
-      message: "SuperAdmin OTP dispatch started",
+      message: "SuperAdmin OTP sent successfully",
     });
 
   } catch (err) {
@@ -490,7 +484,7 @@ const sendmailotp = async (req, res) => {
     user.isverifyotp = false;
     await user.save();
 
-    await sendotp(email, plain).catch(err => console.error(err));
+    await sendotp(email, plain);
     return res.status(200).json({ message:"otp sent successfully", success:true });
   } catch (error) {
     console.error("sendmailotp error:", error);
