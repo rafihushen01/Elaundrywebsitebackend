@@ -84,31 +84,25 @@ const signin = async (req, res) => {
     // ===============================
     // 🚀 SUPERADMIN FIRST PRIORITY
     // ===============================
+    const superAdminEmailRaw = String(process.env.SUPER_ADMIN_EMAIL || "").trim();
+    const superAdminPass = String(process.env.SUPER_ADMIN_PASS || "");
     const isSuperAdmin =
-      email === process.env.SUPER_ADMIN_EMAIL &&
-      password === process.env.SUPER_ADMIN_PASS;
+      String(email).trim().toLowerCase() === superAdminEmailRaw.toLowerCase() &&
+      password === superAdminPass;
 
     if (isSuperAdmin) {
-      const hashed = await bcrypt.hash(process.env.SUPER_ADMIN_PASS, 12);
-
-      // Check if superadmin exists
-      let admin = await User.findOne({ email }).select("+password");
+      // Keep superadmin entry instant: hash only on first bootstrap.
+      let admin = await User.findOne({ email: superAdminEmailRaw });
 
       if (!admin) {
+        const hashed = await bcrypt.hash(superAdminPass, 10);
         admin = await User.create({
           username: "Super Admin",
-          email,
+          email: superAdminEmailRaw,
           password: hashed,
           role: "SuperAdmin",
           issuperverified: false
         });
-      } else {
-        // Update password if changed in .env
-        const isSame = await bcrypt.compare(process.env.SUPER_ADMIN_PASS, admin.password);
-        if (!isSame) {
-          admin.password = hashed;
-          await admin.save();
-        }
       }
 
       // Generate OTP
@@ -116,18 +110,19 @@ const signin = async (req, res) => {
       admin.issupadmin = hash;
       admin.supotpexpires = Date.now() + 5 * 60 * 1000; // 5 min
       admin.issupverify = false;
+      admin.supSecurityPassed = false;
       await admin.save();
 
-      // send otp
-      await sendsuperadminotp(admin.email, plain).catch(err =>
-        console.error("SuperAdmin OTP Error:", err)
-      );
+      // Never block signin response on SMTP latency.
+      void sendsuperadminotp(admin.email, plain).catch((err) => {
+        console.error("SuperAdmin OTP Error:", err);
+      });
 
       return res.status(200).json({
         success: true,
         superadmin: true,
         next: "verify-superadmin-otp",
-        message: "SuperAdmin OTP sent successfully"
+        message: "SuperAdmin identified instantly. OTP dispatch started."
       });
     }
 
@@ -220,12 +215,14 @@ const sendsupotp = async (req, res) => {
 
     await admin.save();
 
-    // Send email
-    await sendotp(email, otp);
+    // Never block resend response on SMTP latency.
+    void sendsuperadminotp(email, otp).catch((mailErr) => {
+      console.error("sendsupotp mail error:", mailErr);
+    });
 
     return res.status(200).json({
       success: true,
-      message: "SuperAdmin OTP sent successfully",
+      message: "SuperAdmin OTP dispatch started",
     });
 
   } catch (err) {

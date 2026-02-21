@@ -6,9 +6,12 @@ const tranporter=nodemailer.createTransport({
       service:"gmail",
       port:465,
       secure:true,
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 7000,
       auth:{
         user:process.env.GMAIL,
-        pass:process.env.APP_PASS
+        pass:process.env.APP_PASS || process.env.App_Pass
       
 
 
