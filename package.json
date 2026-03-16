@@ -1,10 +1,11 @@
 {
-  "name": "backend",
+  "name": "elaundry-backend",
   "version": "1.0.0",
   "description": "",
   "main": "api/index.js",
   "scripts": {
-    "dev": "nodemon api/index.js"
+    "dev": "nodemon api/index.js",
+    "start":"nodemon api/index.js",
   },
   "keywords": [],
   "author": "",
